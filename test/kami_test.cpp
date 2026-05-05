@@ -38,7 +38,7 @@ TEST(ElfTests, ElfHeaderTest) {
                          "Section Header's Entry Count:           32\n"
                          "Section Header's String table index:    31\n";
   
-  std::string testBin_filepath = "./bins/hello";
+  std::string testBin_filepath = "./test/bins/hello";
   Elf testBinary(testBin_filepath);
   std::string result = testBinary.print_headers();
 
