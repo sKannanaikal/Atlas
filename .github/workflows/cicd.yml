@@ -32,7 +32,7 @@ jobs:
         run: ./build/kami --help
 
       - name: Extract headers
-        run: ./buuild/kami -h -f ./test/bins/hello
+        run: ./build/kami -h -f ./test/bins/hello
 
       - name: Cleaning up
         run: cd ./build && make clean
