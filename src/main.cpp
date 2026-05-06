@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 		if (args.count("help")) //output usage information
 		{
 			std::cout << descriptions << std::endl;
-			retcode == returncodes::SUCCESS;
+			retcode = returncodes::SUCCESS;
 		}
 
 		else if (args.count("headers") && args.count("file")) //if reqesting headers and file is passed in
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 			Elf binary(filepath);
 			std::string headers = binary.print_headers();
 			std::cout << headers << std::endl;
-			retcode == returncodes::SUCCESS;
+			retcode = returncodes::SUCCESS;
 		}
 
 		else // assume improper usage and exit cleanly
