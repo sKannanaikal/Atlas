@@ -1,2 +1,2 @@
 # Atlas
-Cross Platform Binary Loader Library
+Cross Platform Binary Loader Library along with a TUI
