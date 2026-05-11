@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(kami)
+project(atlas)
 add_executable(${PROJECT_NAME} main.cpp)
 
 include(FetchContent)

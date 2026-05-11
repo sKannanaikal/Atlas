@@ -14,7 +14,7 @@
 #include "./lib/elf.hpp"
 
 /**
- * @brief main routine of kami which handles argument parsing and calls proper routines based on cli args
+ * @brief main routine of atlas which handles argument parsing and calls proper routines based on cli args
  * 
  * @param argc number of arguments in cli
  * @param argv array of strings containing various cli args
