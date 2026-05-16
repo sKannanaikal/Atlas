@@ -16,7 +16,7 @@
 #include "elf.hpp"
 #include "returncodes.hpp"
 
-
+/// value for the width of pretty printing information in elf header printing
 #define LABEL_WIDTH 40
 
 /**
@@ -517,6 +517,12 @@ std::string Elf::print_headers()
 	return cli_output.str();
 }
 
+/**
+ * @brief given an index value from the (shname value in the section header) will return corresponding string value from string table section
+ * 
+ * @param string_t_offset 
+ * @return std::string 
+ */
 std::string Elf::get_section_name(std::uint32_t string_t_offset) {
     std::string section_name;
     
@@ -551,6 +557,11 @@ std::string Elf::get_section_name(std::uint32_t string_t_offset) {
     return section_name; // not sure if this is going to be some scope issue now though
 }
 
+/**
+ * @brief goes ahead and prints out information pertaining to every section in the binary
+ * 
+ * @return std::string 
+ */
 std::string Elf::print_s_headers()
 {
     std::ostringstream cli_output;

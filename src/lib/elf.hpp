@@ -79,6 +79,11 @@ typedef struct elf_header32
 
 } Elf_Header32;
 
+
+/**
+ * @brief 32 bit binary section header struct representation
+ * 
+ */
 typedef struct sectionheader32 
 {
     std::uint32_t sh_name;       // Offset into the section string table (.shstrtab)
@@ -124,6 +129,10 @@ typedef struct sectionheader32
 } Elf_S_Header32;
 
 
+/**
+ * @brief 64 bit binary section header struct representation
+ * 
+ */
 typedef struct sectionheader64 
 {
     std::uint32_t sh_name;       // Offset into section string table (.shstrtab)
@@ -147,6 +156,10 @@ typedef struct sectionheader64
     std::uint64_t sh_entsize;    // Entry size for table-like sections
 } Elf_S_Header64;
 
+/**
+ * @brief enum mapping all possible section header types to their values
+ * 
+ */
 enum class SectionHeaderType : std::uint32_t {
 
     // Marks an unused section header entry
@@ -219,6 +232,10 @@ enum class SectionHeaderType : std::uint32_t {
     SHT_HIUSER         = 0xFFFFFFFF
 };
 
+/**
+ * @brief enum mapping all possible section header flags to their values
+ * 
+ */
 enum class SectionHeaderFlags : std::uint32_t {
 
     // Section data is writable at runtime
