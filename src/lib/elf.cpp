@@ -64,6 +64,17 @@ Elf::Elf(std::string filename) : m_filename(filename)
             this->m_elf_s_headers.push_back(s_header);
             offset += sizeof(Elf_S_Header32);
         }
+
+        // getting program headers
+        Elf_P_Header32 p_header;
+        std::uint32_t ph_offset = header.e_phoff;
+        for(std::uint16_t iterator = 0; iterator < header.e_phnum; iterator++)
+        {
+            elf_file.seekg(offset);
+            elf_file.read(reinterpret_cast<char *>(&p_header), sizeof(Elf_P_Header32));
+            this->m_elf_p_headers.push_back(p_header);
+            offset += sizeof(Elf_P_Header32);
+        }
         
         
 	}
@@ -83,6 +94,17 @@ Elf::Elf(std::string filename) : m_filename(filename)
             elf_file.read(reinterpret_cast<char *>(&s_header), sizeof(s_header));
             this->m_elf_s_headers.push_back(s_header);
             offset += sizeof(Elf_S_Header64);
+        }
+
+        // getting program headers
+        Elf_P_Header64 p_header;
+        std::uint64_t ph_offset = header.e_phoff;
+        for (std::uint16_t iterator = 0; iterator < header.e_phnum; iterator++) 
+        {
+            elf_file.seekg(offset);
+            elf_file.read(reinterpret_cast<char *>(&p_header), sizeof(Elf_P_Header64));
+            this->m_elf_p_headers.push_back(p_header);
+            offset += sizeof(Elf_P_Header64);
         }
 	}
 
