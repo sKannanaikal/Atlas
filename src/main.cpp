@@ -32,6 +32,8 @@ int main(int argc, char *argv[])
 			("help", "Help Screen")
 			("headers,h", "Headers")
 			("sections,s", "Sections")
+			("segments,p", "Segments")
+			("strings,t","Strings")
 			("file,f", boost::program_options::value<std::string>(&filepath), "File");
 		
 		boost::program_options::variables_map args;
@@ -52,6 +54,7 @@ int main(int argc, char *argv[])
 			std::cout << headers << std::endl;
 			retcode = returncodes::SUCCESS;
 		}
+
 		else if (args.count("sections") && args.count("file")) //if requesting sections and file is passed in
 		{
 			//create a binary object of Elf class and prints the section headers
@@ -59,6 +62,22 @@ int main(int argc, char *argv[])
 			std::string headers = binary.print_s_headers();
 			std::cout << headers << std::endl;
 			retcode = returncodes::SUCCESS;
+		}
+
+		else if (args.count("segments") && args.count("file"))
+		{
+			Elf binary(filepath);
+			std::string headers = binary.print_p_headers();
+			std::cout << headers << std::endl;
+			return returncodes::SUCCESS;
+		}
+
+		else if (args.count("strings") && args.count("file"))
+		{
+			Elf binary(filepath);
+			std::string strings = binary.print_bin_strings();
+			std::cout << strings << std::endl;
+			return returncodes::SUCCESS;
 		}
 
 		else // assume improper usage and exit cleanly

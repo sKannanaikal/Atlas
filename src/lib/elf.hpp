@@ -159,19 +159,36 @@ typedef struct programHeader32
  * @brief 64 bit binary  program header section representation
  * 
  */
-typedef struct programHeader32
+typedef struct programHeader64
 {
 	std::uint32_t p_type;    // Segment type
-    std::uint32_t p_offset;  // Offset of segment in file
-    std::uint32_t p_vaddr;   // Virtual address in memory
-    std::uint32_t p_paddr;   // Physical address (usually ignored)
-    std::uint32_t p_filesz;  // Size of segment in file image
-    std::uint32_t p_memsz;   // Size of segment in memory image
     std::uint32_t p_flags;   // Segment flags
-    std::uint32_t p_align;   // Alignment
+    std::uint64_t p_offset;  // Offset in file image
+    std::uint64_t p_vaddr;   // Virtual address in memory
+    std::uint64_t p_paddr;   // Physical address (unused on Linux)
+    std::uint64_t p_filesz;  // Size of segment in file
+    std::uint64_t p_memsz;   // Size of segment in memory
+    std::uint64_t p_align;   // Alignment
+
 } Elf_P_Header64;
 
+enum class ProgramHeaderType : std::uint32_t
+{
+    PT_NULL    = 0,          // Unused entry
+    PT_LOAD    = 1,          // Loadable segment
+    PT_DYNAMIC = 2,          // Dynamic linking information
+    PT_INTERP  = 3,          // Interpreter pathname
+    PT_NOTE    = 4,          // Auxiliary information
+    PT_SHLIB   = 5,          // Reserved
+    PT_PHDR    = 6,          // Program header table
+    PT_TLS     = 7,          // Thread-local storage segment
 
+    PT_LOOS    = 0x60000000, // Start of OS-specific range
+    PT_HIOS    = 0x6FFFFFFF, // End of OS-specific range
+
+    PT_LOPROC  = 0x70000000, // Start of processor-specific range
+    PT_HIPROC  = 0x7FFFFFFF  // End of processor-specific range
+};
 /**
  * @brief enum mapping all possible section header types to their values
  * 
@@ -461,6 +478,7 @@ class Elf
 		std::string print_headers();
         std::string print_s_headers();
         std::string print_p_headers();
+        std::string print_bin_strings();
 		
 		// getters
 		std::string& 								                 get_filename();
