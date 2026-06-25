@@ -313,6 +313,133 @@ Name: .shstrtab
     normalize_whitespace(result));
 }
 
+TEST(ElfTests, ElfProgramHeaderTest){
+	std::string expected = R"(Segment: 
+	Type:PHDR
+	Permissions: R--
+	Virtual Address: 400040
+	File offset: 64 (bytes)
+	Physical Address: 400040
+	File Size: 2d8
+	Memory Size: 2d8
+	Align: 8
+Segment: 
+	Type:INTERP
+	Permissions: R--
+	Virtual Address: 401000
+	File offset: 4096 (bytes)
+	Physical Address: 401000
+	File Size: 1c
+	Memory Size: 1c
+	Align: 1
+Segment: 
+	Type:LOAD
+	Permissions: R-X
+	Virtual Address: 400000
+	File offset: 0 (bytes)
+	Physical Address: 400000
+	File Size: 489
+	Memory Size: 489
+	Align: 1000
+Segment: 
+	Type:LOAD
+	Permissions: R--
+	Virtual Address: 401000
+	File offset: 4096 (bytes)
+	Physical Address: 401000
+	File Size: 2a8
+	Memory Size: 2a8
+	Align: 1000
+Segment: 
+	Type:LOAD
+	Permissions: RW-
+	Virtual Address: 402df8
+	File offset: 7672 (bytes)
+	Physical Address: 402df8
+	File Size: 214
+	Memory Size: 218
+	Align: 1000
+Segment: 
+	Type:DYN
+	Permissions: RW-
+	Virtual Address: 402e08
+	File offset: 7688 (bytes)
+	Physical Address: 402e08
+	File Size: 1d0
+	Memory Size: 1d0
+	Align: 8
+Segment: 
+	Type:NOTE
+	Permissions: R--
+	Virtual Address: 400318
+	File offset: 792 (bytes)
+	Physical Address: 400318
+	File Size: 24
+	Memory Size: 24
+	Align: 4
+Segment: 
+	Type:NOTE
+	Permissions: R--
+	Virtual Address: 401248
+	File offset: 4680 (bytes)
+	Physical Address: 401248
+	File Size: 40
+	Memory Size: 40
+	Align: 8
+Segment: 
+	Type:NOTE
+	Permissions: R--
+	Virtual Address: 401288
+	File offset: 4744 (bytes)
+	Physical Address: 401288
+	File Size: 20
+	Memory Size: 20
+	Align: 4
+Segment: 
+	Type:UNK
+	Permissions: R--
+	Virtual Address: 401248
+	File offset: 4680 (bytes)
+	Physical Address: 401248
+	File Size: 40
+	Memory Size: 40
+	Align: 8
+Segment: 
+	Type:UNK
+	Permissions: R--
+	Virtual Address: 401188
+	File offset: 4488 (bytes)
+	Physical Address: 401188
+	File Size: 2c
+	Memory Size: 2c
+	Align: 4
+Segment: 
+	Type:UNK
+	Permissions: RW-
+	Virtual Address: 0
+	File offset: 0 (bytes)
+	Physical Address: 0
+	File Size: 0
+	Memory Size: 0
+	Align: 10
+Segment: 
+	Type:UNK
+	Permissions: R--
+	Virtual Address: 402df8
+	File offset: 7672 (bytes)
+	Physical Address: 402df8
+	File Size: 208
+	Memory Size: 208
+	Align: 1
+)";
+	std::string testBin_filepath = "./test/bins/hello";
+  	Elf testBinary(testBin_filepath);
+  	std::string result = testBinary.print_p_headers();
+
+  	EXPECT_EQ(normalize_whitespace(expected), 
+    		normalize_whitespace(result));
+}
+
 TEST(ElfTests, ElfStringTableParsingTest) {
 	std::string expected = R"(Name: .dynstr
 ----------------------------------------------------------------------------------------------------
