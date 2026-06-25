@@ -630,7 +630,7 @@ static std::vector<std::string> _parse_elf_string_table(std::vector<char> string
         {
             all_strings.push_back(current_string);
             current_string = "";
-        } else {
+        } else if (current_char != '\0') {
             current_string += current_char;
         }
     }
@@ -641,7 +641,7 @@ static std::vector<std::string> _parse_elf_string_table(std::vector<char> string
 static std::string _get_section_strings(std::vector<char> string_table, std::string section_name) 
 {
     std::ostringstream section_strings;
-    section_strings << "Name: " << section_name;
+    section_strings << "Name: " << section_name << "\n";
     section_strings << std::string(100, '-') << '\n';
 
     std::vector<std::string> all_strings = _parse_elf_string_table(string_table);

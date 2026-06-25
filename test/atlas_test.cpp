@@ -1,6 +1,12 @@
 #include <gtest/gtest.h>
 #include "../src/lib/elf.hpp"
 
+/**
+ * @brief helper function that just removes all extra white space in  a seequence down to a sigle space.
+ * 
+ * @param input 
+ * @return std::string 
+ */
 std::string normalize_whitespace(const std::string& input)
 {
     std::string output;
@@ -305,4 +311,85 @@ Name: .shstrtab
   EXPECT_EQ(
     normalize_whitespace(expected), 
     normalize_whitespace(result));
+}
+
+TEST(ElfTests, ElfStringTableParsingTest) {
+	std::string expected = R"(Name: .dynstr
+----------------------------------------------------------------------------------------------------
+0. puts
+1. __libc_start_main
+2. libc.so.6
+3. GLIBC_2.2.5
+4. GLIBC_2.34
+5. __gmon_start__
+Name: .strtab
+----------------------------------------------------------------------------------------------------
+0. crt1.o
+1. __abi_tag
+2. crtbegin.o
+3. deregister_tm_clones
+4. __do_global_dtors_aux
+5. completed.0
+6. __do_global_dtors_aux_fini_array_entry
+7. frame_dummy
+8. __frame_dummy_init_array_entry
+9. hello.c
+10. crtend.o
+11. __FRAME_END__
+12. _DYNAMIC
+13. __GNU_EH_FRAME_HDR
+14. _GLOBAL_OFFSET_TABLE_
+15. __libc_start_main@GLIBC_2.34
+16. puts@GLIBC_2.2.5
+17. _edata
+18. _fini
+19. __data_start
+20. __gmon_start__
+21. __dso_handle
+22. _IO_stdin_used
+23. _end
+24. _dl_relocate_static_pie
+25. __bss_start
+26. main
+27. __TMC_END__
+28. _init
+Name: .shstrtab
+----------------------------------------------------------------------------------------------------
+0. .symtab
+1. .strtab
+2. .shstrtab
+3. .note.gnu.build-id
+4. .init
+5. .text
+6. .fini
+7. .interp
+8. .gnu.hash
+9. .dynsym
+10. .dynstr
+11. .gnu.version
+12. .gnu.version_r
+13. .rela.dyn
+14. .rela.plt
+15. .rodata
+16. .eh_frame_hdr
+17. .eh_frame
+18. .note.gnu.property
+19. .note.ABI-tag
+20. .init_array
+21. .fini_array
+22. .dynamic
+23. .got
+24. .got.plt
+25. .data
+26. .bss
+27. .comment
+28. .annobin.notes
+29. .gnu.build.attributes
+)";
+	std::string testBin_filepath = "./test/bins/hello";
+  	Elf testBinary(testBin_filepath);
+  	std::string result = testBinary.print_bin_strings();
+
+  	EXPECT_EQ(normalize_whitespace(expected), 
+    		normalize_whitespace(result));
 }
