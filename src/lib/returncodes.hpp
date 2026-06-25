@@ -9,5 +9,6 @@ namespace returncodes {
         SUCCESS,
         IMPROPER_USAGE,
         FILE_READ_ERROR,
+        
     };
 };

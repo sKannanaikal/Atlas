@@ -1,6 +1,12 @@
 #include <gtest/gtest.h>
 #include "../src/lib/elf.hpp"
 
+/**
+ * @brief helper function that just removes all extra white space in  a seequence down to a sigle space.
+ * 
+ * @param input 
+ * @return std::string 
+ */
 std::string normalize_whitespace(const std::string& input)
 {
     std::string output;
@@ -305,4 +311,212 @@ Name: .shstrtab
   EXPECT_EQ(
     normalize_whitespace(expected), 
     normalize_whitespace(result));
+}
+
+TEST(ElfTests, ElfProgramHeaderTest){
+	std::string expected = R"(Segment: 
+	Type:PHDR
+	Permissions: R--
+	Virtual Address: 400040
+	File offset: 64 (bytes)
+	Physical Address: 400040
+	File Size: 2d8
+	Memory Size: 2d8
+	Align: 8
+Segment: 
+	Type:INTERP
+	Permissions: R--
+	Virtual Address: 401000
+	File offset: 4096 (bytes)
+	Physical Address: 401000
+	File Size: 1c
+	Memory Size: 1c
+	Align: 1
+Segment: 
+	Type:LOAD
+	Permissions: R-X
+	Virtual Address: 400000
+	File offset: 0 (bytes)
+	Physical Address: 400000
+	File Size: 489
+	Memory Size: 489
+	Align: 1000
+Segment: 
+	Type:LOAD
+	Permissions: R--
+	Virtual Address: 401000
+	File offset: 4096 (bytes)
+	Physical Address: 401000
+	File Size: 2a8
+	Memory Size: 2a8
+	Align: 1000
+Segment: 
+	Type:LOAD
+	Permissions: RW-
+	Virtual Address: 402df8
+	File offset: 7672 (bytes)
+	Physical Address: 402df8
+	File Size: 214
+	Memory Size: 218
+	Align: 1000
+Segment: 
+	Type:DYN
+	Permissions: RW-
+	Virtual Address: 402e08
+	File offset: 7688 (bytes)
+	Physical Address: 402e08
+	File Size: 1d0
+	Memory Size: 1d0
+	Align: 8
+Segment: 
+	Type:NOTE
+	Permissions: R--
+	Virtual Address: 400318
+	File offset: 792 (bytes)
+	Physical Address: 400318
+	File Size: 24
+	Memory Size: 24
+	Align: 4
+Segment: 
+	Type:NOTE
+	Permissions: R--
+	Virtual Address: 401248
+	File offset: 4680 (bytes)
+	Physical Address: 401248
+	File Size: 40
+	Memory Size: 40
+	Align: 8
+Segment: 
+	Type:NOTE
+	Permissions: R--
+	Virtual Address: 401288
+	File offset: 4744 (bytes)
+	Physical Address: 401288
+	File Size: 20
+	Memory Size: 20
+	Align: 4
+Segment: 
+	Type:UNK
+	Permissions: R--
+	Virtual Address: 401248
+	File offset: 4680 (bytes)
+	Physical Address: 401248
+	File Size: 40
+	Memory Size: 40
+	Align: 8
+Segment: 
+	Type:UNK
+	Permissions: R--
+	Virtual Address: 401188
+	File offset: 4488 (bytes)
+	Physical Address: 401188
+	File Size: 2c
+	Memory Size: 2c
+	Align: 4
+Segment: 
+	Type:UNK
+	Permissions: RW-
+	Virtual Address: 0
+	File offset: 0 (bytes)
+	Physical Address: 0
+	File Size: 0
+	Memory Size: 0
+	Align: 10
+Segment: 
+	Type:UNK
+	Permissions: R--
+	Virtual Address: 402df8
+	File offset: 7672 (bytes)
+	Physical Address: 402df8
+	File Size: 208
+	Memory Size: 208
+	Align: 1
+)";
+	std::string testBin_filepath = "./test/bins/hello";
+  	Elf testBinary(testBin_filepath);
+  	std::string result = testBinary.print_p_headers();
+
+  	EXPECT_EQ(normalize_whitespace(expected), 
+    		normalize_whitespace(result));
+}
+
+TEST(ElfTests, ElfStringTableParsingTest) {
+	std::string expected = R"(Name: .dynstr
+----------------------------------------------------------------------------------------------------
+0. puts
+1. __libc_start_main
+2. libc.so.6
+3. GLIBC_2.2.5
+4. GLIBC_2.34
+5. __gmon_start__
+Name: .strtab
+----------------------------------------------------------------------------------------------------
+0. crt1.o
+1. __abi_tag
+2. crtbegin.o
+3. deregister_tm_clones
+4. __do_global_dtors_aux
+5. completed.0
+6. __do_global_dtors_aux_fini_array_entry
+7. frame_dummy
+8. __frame_dummy_init_array_entry
+9. hello.c
+10. crtend.o
+11. __FRAME_END__
+12. _DYNAMIC
+13. __GNU_EH_FRAME_HDR
+14. _GLOBAL_OFFSET_TABLE_
+15. __libc_start_main@GLIBC_2.34
+16. puts@GLIBC_2.2.5
+17. _edata
+18. _fini
+19. __data_start
+20. __gmon_start__
+21. __dso_handle
+22. _IO_stdin_used
+23. _end
+24. _dl_relocate_static_pie
+25. __bss_start
+26. main
+27. __TMC_END__
+28. _init
+Name: .shstrtab
+----------------------------------------------------------------------------------------------------
+0. .symtab
+1. .strtab
+2. .shstrtab
+3. .note.gnu.build-id
+4. .init
+5. .text
+6. .fini
+7. .interp
+8. .gnu.hash
+9. .dynsym
+10. .dynstr
+11. .gnu.version
+12. .gnu.version_r
+13. .rela.dyn
+14. .rela.plt
+15. .rodata
+16. .eh_frame_hdr
+17. .eh_frame
+18. .note.gnu.property
+19. .note.ABI-tag
+20. .init_array
+21. .fini_array
+22. .dynamic
+23. .got
+24. .got.plt
+25. .data
+26. .bss
+27. .comment
+28. .annobin.notes
+29. .gnu.build.attributes
+)";
+	std::string testBin_filepath = "./test/bins/hello";
+  	Elf testBinary(testBin_filepath);
+  	std::string result = testBinary.print_bin_strings();
+
+  	EXPECT_EQ(normalize_whitespace(expected), 
+    		normalize_whitespace(result));
 }

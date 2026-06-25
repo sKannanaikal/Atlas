@@ -30,21 +30,16 @@ typedef struct elf_header64
                                // [7]    OS/ABI
                                // [8]    ABI version
                                // [9–15] Padding (unused)
-
     std::uint16_t  e_type;      // Object file type (relocatable, executable, shared, core)
     std::uint16_t  e_machine;   // Target architecture (e.g., x86-64, ARM)
     std::uint32_t  e_version;   // ELF version (should be 1)
-
     std::uint64_t  e_entry;     // Entry point virtual address (where execution starts)
     std::uint64_t  e_phoff;     // File offset to program header table
     std::uint64_t  e_shoff;     // File offset to section header table
-
     std::uint32_t  e_flags;     // Processor-specific flags (usually 0 on x86)
-
     std::uint16_t  e_ehsize;    // ELF header size in bytes (64 for ELF64)
     std::uint16_t  e_phentsize; // Size of one program header entry
     std::uint16_t  e_phnum;     // Number of program header entries
-
     std::uint16_t  e_shentsize; // Size of one section header entry
     std::uint16_t  e_shnum;     // Number of section header entries
     std::uint16_t  e_shstrndx;  // Index of section header string table
@@ -62,17 +57,13 @@ typedef struct elf_header32
     std::uint16_t  e_type;      // Object file type
     std::uint16_t  e_machine;   // Target architecture
     std::uint32_t  e_version;   // ELF version
-
     std::uint32_t  e_entry;     // Entry point address (32-bit)
     std::uint32_t  e_phoff;     // Program header table offset
     std::uint32_t  e_shoff;     // Section header table offset
-
     std::uint32_t  e_flags;     // Processor-specific flags
-
     std::uint16_t  e_ehsize;    // ELF header size (52 for ELF32)
     std::uint16_t  e_phentsize; // Size of program header entry
     std::uint16_t  e_phnum;     // Number of program header entries
-
     std::uint16_t  e_shentsize; // Size of section header entry
     std::uint16_t  e_shnum;     // Number of section header entries
     std::uint16_t  e_shstrndx;  // Section name string table index
@@ -136,26 +127,68 @@ typedef struct sectionheader32
 typedef struct sectionheader64 
 {
     std::uint32_t sh_name;       // Offset into section string table (.shstrtab)
-
     std::uint32_t sh_type;       // Section type
-
     std::uint64_t sh_flags;      // Section flags/attributes
-
     std::uint64_t sh_addr;       // Virtual memory address of section
-
     std::uint64_t sh_offset;     // File offset to section contents
-
     std::uint64_t sh_size;       // Section size in bytes
-
     std::uint32_t sh_link;       // Section index link (section-dependent)
-
     std::uint32_t sh_info;       // Extra section metadata
-
     std::uint64_t sh_addralign;  // Alignment requirement in memory/file
-
     std::uint64_t sh_entsize;    // Entry size for table-like sections
 } Elf_S_Header64;
 
+
+/**
+ * @brief 32 bit binary  program header section representation
+ * 
+ */
+typedef struct programHeader32
+{
+	std::uint32_t p_type;    // Segment type
+    std::uint32_t p_offset;  // Offset of segment in file
+    std::uint32_t p_vaddr;   // Virtual address in memory
+    std::uint32_t p_paddr;   // Physical address (usually ignored)
+    std::uint32_t p_filesz;  // Size of segment in file image
+    std::uint32_t p_memsz;   // Size of segment in memory image
+    std::uint32_t p_flags;   // Segment flags
+    std::uint32_t p_align;   // Alignment
+} Elf_P_Header32;
+
+/**
+ * @brief 64 bit binary  program header section representation
+ * 
+ */
+typedef struct programHeader64
+{
+	std::uint32_t p_type;    // Segment type
+    std::uint32_t p_flags;   // Segment flags
+    std::uint64_t p_offset;  // Offset in file image
+    std::uint64_t p_vaddr;   // Virtual address in memory
+    std::uint64_t p_paddr;   // Physical address (unused on Linux)
+    std::uint64_t p_filesz;  // Size of segment in file
+    std::uint64_t p_memsz;   // Size of segment in memory
+    std::uint64_t p_align;   // Alignment
+
+} Elf_P_Header64;
+
+enum class ProgramHeaderType : std::uint32_t
+{
+    PT_NULL    = 0,          // Unused entry
+    PT_LOAD    = 1,          // Loadable segment
+    PT_DYNAMIC = 2,          // Dynamic linking information
+    PT_INTERP  = 3,          // Interpreter pathname
+    PT_NOTE    = 4,          // Auxiliary information
+    PT_SHLIB   = 5,          // Reserved
+    PT_PHDR    = 6,          // Program header table
+    PT_TLS     = 7,          // Thread-local storage segment
+
+    PT_LOOS    = 0x60000000, // Start of OS-specific range
+    PT_HIOS    = 0x6FFFFFFF, // End of OS-specific range
+
+    PT_LOPROC  = 0x70000000, // Start of processor-specific range
+    PT_HIPROC  = 0x7FFFFFFF  // End of processor-specific range
+};
 /**
  * @brief enum mapping all possible section header types to their values
  * 
@@ -432,8 +465,9 @@ class Elf
 {
 	private:
 		std::string m_filename;
-		std::variant<Elf_Header32, Elf_Header64> m_elf_header;
-        std::vector<std::variant<Elf_S_Header32, Elf_S_Header64>> m_elf_s_headers;
+		std::variant<Elf_Header32, Elf_Header64>                    m_elf_header;
+        std::vector<std::variant<Elf_S_Header32, Elf_S_Header64>>   m_elf_s_headers;
+        std::vector<std::variant<Elf_P_Header32, Elf_P_Header64>>   m_elf_p_headers;
 		
 		void extract_headers(std::ifstream elf_file);
 
@@ -443,11 +477,14 @@ class Elf
 		
 		std::string print_headers();
         std::string print_s_headers();
+        std::string print_p_headers();
+        std::string print_bin_strings();
 		
 		// getters
 		std::string& 								                 get_filename();
 		std::variant<Elf_Header32, Elf_Header64>& 	                 get_header();
         std::vector<std::variant<Elf_S_Header32, Elf_S_Header64>>&   get_s_header();
+        std::vector<std::variant<Elf_P_Header32, Elf_P_Header64>>&   get_p_header();
         std::string                                                  get_section_name(std::uint32_t index);
 };
 

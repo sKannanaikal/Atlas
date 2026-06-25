@@ -64,6 +64,17 @@ Elf::Elf(std::string filename) : m_filename(filename)
             this->m_elf_s_headers.push_back(s_header);
             offset += sizeof(Elf_S_Header32);
         }
+
+        // getting program headers
+        Elf_P_Header32 p_header;
+        std::uint32_t ph_offset = header.e_phoff;
+        for(std::uint16_t iterator = 0; iterator < header.e_phnum; iterator++)
+        {
+            elf_file.seekg(ph_offset);
+            elf_file.read(reinterpret_cast<char *>(&p_header), sizeof(Elf_P_Header32));
+            this->m_elf_p_headers.push_back(p_header);
+            ph_offset += sizeof(Elf_P_Header32);
+        }
         
         
 	}
@@ -83,6 +94,17 @@ Elf::Elf(std::string filename) : m_filename(filename)
             elf_file.read(reinterpret_cast<char *>(&s_header), sizeof(s_header));
             this->m_elf_s_headers.push_back(s_header);
             offset += sizeof(Elf_S_Header64);
+        }
+
+        // getting program headers
+        Elf_P_Header64 p_header;
+        std::uint64_t ph_offset = header.e_phoff;
+        for (std::uint16_t iterator = 0; iterator < header.e_phnum; iterator++) 
+        {
+            elf_file.seekg(ph_offset);
+            elf_file.read(reinterpret_cast<char *>(&p_header), sizeof(Elf_P_Header64));
+            this->m_elf_p_headers.push_back(p_header);
+            ph_offset += sizeof(Elf_P_Header64);
         }
 	}
 
@@ -113,6 +135,11 @@ std::variant<Elf_Header32, Elf_Header64>& Elf::get_header()
 std::vector<std::variant<Elf_S_Header32, Elf_S_Header64>>&   Elf::get_s_header()
 {
     return this->m_elf_s_headers;
+}
+
+std::vector<std::variant<Elf_P_Header32, Elf_P_Header64>>&   Elf::get_p_header()
+{
+    return this->m_elf_p_headers;
 }
 
 /**
@@ -333,6 +360,41 @@ static std::string _convert_stype(std::uint32_t sh_type)
     case SectionHeaderType::SHT_HIUSER:         return "Application-specific (high bound)";
     default:                                    return "Unknown section type";
     }
+}
+
+static std::string _convert_ptype(std::uint32_t p_type)
+{
+    switch (static_cast<ProgramHeaderType>(p_type))
+    {
+    case ProgramHeaderType::PT_NULL:    return "NULL";
+    case ProgramHeaderType::PT_LOAD:    return "LOAD";
+    case ProgramHeaderType::PT_DYNAMIC: return "DYN";
+    case ProgramHeaderType::PT_INTERP:  return "INTERP";
+    case ProgramHeaderType::PT_NOTE:    return "NOTE";
+    case ProgramHeaderType::PT_SHLIB:   return "SHLIB";
+    case ProgramHeaderType::PT_PHDR:    return "PHDR";
+    case ProgramHeaderType::PT_TLS:     return "TLS";
+    case ProgramHeaderType::PT_LOOS:    return "LOWOS";
+    case ProgramHeaderType::PT_HIOS:    return "HIGHOS";
+    case ProgramHeaderType::PT_LOPROC:  return "LOWPROC";
+    case ProgramHeaderType::PT_HIPROC:  return "HIGHPROC";
+    default:                            return "UNK";
+    }
+}
+
+static std::string _get_ph_flags(std::uint32_t flags) {
+    std::string output = "---";
+
+    if (flags & 0x4)
+        output.at(0) = 'R';
+    
+    if (flags & 0x2)
+        output.at(1) = 'W';
+
+    if (flags & 0x1)
+        output.at(2) = 'X';
+    
+    return output;
 }
 
 /**
@@ -557,6 +619,72 @@ std::string Elf::get_section_name(std::uint32_t string_t_offset) {
     return section_name; // not sure if this is going to be some scope issue now though
 }
 
+static std::vector<std::string> _parse_elf_string_table(std::vector<char> string_table) {
+    std::string current_string;
+    std::vector<std::string> all_strings;
+
+    for (int i = 0; i < string_table.size(); i++)
+    {
+        char current_char = string_table.at(i);
+        if (current_char == '\0' && current_string.size() >= 1)
+        {
+            all_strings.push_back(current_string);
+            current_string = "";
+        } else if (current_char != '\0') {
+            current_string += current_char;
+        }
+    }
+
+    return all_strings;
+}
+
+static std::string _get_section_strings(std::vector<char> string_table, std::string section_name) 
+{
+    std::ostringstream section_strings;
+    section_strings << "Name: " << section_name << "\n";
+    section_strings << std::string(100, '-') << '\n';
+
+    std::vector<std::string> all_strings = _parse_elf_string_table(string_table);
+    for (int iterator = 0; iterator < all_strings.size(); iterator++)
+    {
+        section_strings << iterator << ". " << all_strings.at(iterator) << "\n";
+    }
+
+    return section_strings.str();
+}
+
+std::string Elf::print_bin_strings()
+{      
+    std::ostringstream cli_output;
+
+    std::string filename = get_filename();
+    std::ifstream elf_file {filename, std::ios::binary};
+    if (!elf_file) 
+    {
+        std::cout << "[-] Unable to open up file " << filename << std::endl;
+        std::exit(returncodes::FILE_READ_ERROR);
+    }
+
+    for (int iterator = 0; iterator < this->m_elf_s_headers.size(); iterator++)
+    {
+        std::variant<Elf_S_Header32, Elf_S_Header64> section_header_variant = this->m_elf_s_headers.at(iterator);
+        std::visit([this, &cli_output, &elf_file, &section_header_variant](auto && section_header){
+            std::string section_name = get_section_name(section_header.sh_name);
+            if (section_header.sh_type == static_cast<std::uint32_t>(SectionHeaderType::SHT_STRTAB)) {
+                std::vector<char> string_table(section_header.sh_size);
+                elf_file.seekg(section_header.sh_offset);
+                elf_file.read(string_table.data(), string_table.size());
+                cli_output << _get_section_strings(string_table, section_name);
+            }
+
+        }, section_header_variant);
+    }
+
+    elf_file.close();
+
+    return cli_output.str();
+}
+
 /**
  * @brief goes ahead and prints out information pertaining to every section in the binary
  * 
@@ -586,5 +714,30 @@ std::string Elf::print_s_headers()
         },this->m_elf_s_headers.at(iterator));
     }
     
+    return cli_output.str();
+}
+
+std::string Elf::print_p_headers()
+{
+    std::ostringstream cli_output;
+
+    for (int iterator = 0; iterator < this->m_elf_p_headers.size(); iterator++) 
+    {
+
+        std::visit([this, &cli_output](auto && elf_p_header)
+        {
+            cli_output << "Segment: " << "\n";
+            cli_output << "\t" << "Type:" << _convert_ptype(elf_p_header.p_type) << "\n";
+            cli_output << "\t" << "Permissions: " << _get_ph_flags(elf_p_header.p_flags) << "\n";
+            cli_output << "\t" << "Virtual Address: " << std::hex << elf_p_header.p_vaddr << "\n";
+            cli_output << "\t" << "File offset: "<< std::dec << elf_p_header.p_offset << " (bytes)" << "\n";
+            cli_output << "\t" << "Physical Address: " << std::hex << elf_p_header.p_paddr << "\n";
+            cli_output << "\t" << "File Size: " << std::hex << elf_p_header.p_filesz << "\n";
+            cli_output << "\t" << "Memory Size: " << std::hex << elf_p_header.p_memsz << "\n";
+            cli_output << "\t" << "Align: " << std::hex << elf_p_header.p_align << "\n";
+        }, this->m_elf_p_headers.at(iterator));
+
+    }
+
     return cli_output.str();
 }
